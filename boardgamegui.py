@@ -28,7 +28,7 @@ class BoardGameGui:
         elif "Escape" in released:  # "Escape" key released
             g2d.close_canvas()
         elif "LeftButton" in released and y < game.rows():
-            game.play(x, y, "")
+            game.play(x, y, "black")
             self.update_buttons((x, y))
         elif "RightButton" in released and y < game.rows():
             game.play(x, y, "flag")
@@ -62,9 +62,11 @@ def _write(text, pos, cols=1, bg=(255, 255, 255)):
         text = text.replace("#", "")
         g2d.draw_text(text, center, fsize)
 
-    if "!" in text:
-        g2d.set_color((130, 130, 130))
-        g2d.draw_rect((x * W + 1, y * H + 1), (cols * W - 2, H - 2))
+    elif "!" in text:
+        c=W/2, H/2
+        d=10
+        g2d.set_color((0, 0, 0))
+        #g2d.draw_circle(c, d)
         g2d.set_color((255, 0, 0))
         text = text.replace("!", "")
         g2d.draw_text(text, center, fsize)
