@@ -31,6 +31,12 @@ class BoardGameGui:
             game.play(x, y, "black")
             self.update_buttons((x, y))
         elif "RightButton" in released and y < game.rows():
+            """if "#" in game.read(x, y):
+                game.play(x, y, "cerchia_adiacenti")
+            else:
+                game.play(x, y, "flag")
+            self.update_buttons((x, y))"""""
+
             game.play(x, y, "flag")
             self.update_buttons((x, y))
 
@@ -60,16 +66,25 @@ def _write(text, pos, cols=1, bg=(255, 255, 255)):
         g2d.draw_rect((x * W + 1, y * H + 1), (cols * W - 2, H - 2))
         g2d.set_color((0, 0, 0))
         text = text.replace("#", "")
+        g2d.set_color((255, 255, 255))
         g2d.draw_text(text, center, fsize)
 
     elif "!" in text:
-        c=W/2, H/2
-        d=10
-        g2d.set_color((0, 0, 0))
-        #g2d.draw_circle(c, d)
-        g2d.set_color((255, 0, 0))
         text = text.replace("!", "")
-        g2d.draw_text(text, center, fsize)
+        g2d.set_color((255, 255, 255))
+        g2d.draw_rect((x * W + 1, y * H + 1), (cols * W - 2, H - 2))
+        
+        g2d.set_color((0, 0, 0))
+        circle_center = (x * W + W / 2, y * H + H / 2)
+        circle_radius = min(W, H) // 2 
+        g2d.draw_circle(circle_center, circle_radius)
+
+        g2d.set_color((255, 255, 255))
+        g2d.draw_circle(circle_center, circle_radius - 3)
+
+        g2d.set_color((0, 0, 0))
+        g2d.draw_text(text, circle_center, fsize)
+
 
     else:
         g2d.set_color((0, 0, 0))
@@ -79,3 +94,4 @@ def gui_play(game: BoardGame):
     g2d.init_canvas((game.cols() * W, game.rows() * H + H))
     ui = BoardGameGui(game)
     g2d.main_loop(ui.tick)
+

@@ -34,6 +34,8 @@ class Hitori(BoardGame):
             self.black(x, y)
         elif action == "flag":
             self.circle(x, y)
+        """elif action == "cerchia_adiacenti" and "#" in self._bd[x + y * self._w]:
+            self.cerchia_adiacenti(x, y)"""
 
     def black(self, x: int, y: int):
         if 0 <= x < self._w and 0 <= y < self._h:
@@ -59,8 +61,8 @@ class Hitori(BoardGame):
     def read(self, x: int, y: int):
         if 0<=x<self._w and 0<=y<self._h:
             v=self._bd[x+y*self._w]
-            if self.adiacenzaCella(x, y)==True:
-                return str(v)+"!"
+            #if self.adiacenzaCella(x, y)==True:
+                #return str(v)+"!"
             return str(v)
         else:
             return ' '
@@ -71,10 +73,64 @@ class Hitori(BoardGame):
     def rows(self) -> int:
         return self._w
 
-    def finished(self) -> bool:
+    """def finished(self) -> bool:
+
+        if self.adiacenze()==True:
+            print("presenti adicenze")
+            return False
         
-        if self.adiacenze()==False:
+        self._annot = [0] * (self._h * self._w)
+        for y in range(self._h): 
+            for x in range(self._w): 
+                if self._annot[x + y * self._w] == 0 and "#" not in str(self._bd[x + y * self._w]): 
+                   self.fill(x, y) 
+                   break 
+            if 1 in self._annot: 
+                break
+
+        
+
+        for y in range(self._h): 
+            for x in range(self._w): 
+                if self._annot[x + y * self._w] == 0 and "#" not in str(self._bd[x + y * self._w]): 
+                    print("celle non collegate")
+                    return False        
+
+
+        for y in range(self._h):
+            row=[]
+            for x in range(self._w):
+                if not("#" in str(self._bd[x+y*self._w])):
+                    row.append(self._bd[x+y*self._w])
+            if self.has_repetittion(row):
+                print("ripetizioni su righe")
+                return False
+
+
+
+        for x in range(self._w):
+            cols=[]
+            for y in range(self._h):
+                if not("#" in str(self._bd[x+y*self._w])):
+                    cols.append(self._bd[x+y*self._w])
+            if self.has_repetittion(cols):
+                print("ripetizioni su colonne")
+                return False
             
+        return True"""
+    
+    def finished(self) -> bool:
+
+        if self.adiacenze()==True:
+            print("presenti adicenze")
+            return False
+        
+        self._annot = [0] * (self._h * self._w)
+        self.fill(0, 0) 
+        if all(self._annot)==False:
+            print("non tutte collegate")
+            return False
+        else:
 
             for y in range(self._h):
                 row=[]
@@ -82,6 +138,7 @@ class Hitori(BoardGame):
                     if not("#" in str(self._bd[x+y*self._w])):
                         row.append(self._bd[x+y*self._w])
                 if self.has_repetittion(row):
+                    print("ripetizioni su righe")
                     return False
 
             for x in range(self._w):
@@ -90,30 +147,19 @@ class Hitori(BoardGame):
                     if not("#" in str(self._bd[x+y*self._w])):
                         cols.append(self._bd[x+y*self._w])
                 if self.has_repetittion(cols):
+                    print("ripetizioni su colonne")
                     return False
+                                
+            return True
             
-            self.fill(0, 0)
-            #print(self._annot)
-
-            if 0 in self._annot:
-                return False
-
-
-            if all(self._bd):
-                return True
-            else:
-                return False
-        return False
-        
 
     def fill(self, x, y):
         bd, w, h = self._annot, self._w, self._h
         if 0 <= x < w and 0 <= y < h and bd[x + y * w] == 0:
             bd[x + y * w] = 1
             for dx, dy in [(0, -1), (1, 0), (0, 1), (-1, 0)]:
-                self.fill(x + dx, y + dy)
-
-
+                if 0 <= x + dx < w and 0 <= y + dy < h and "#" not in str(self._bd[(x + dx) + (y + dy) * w]):
+                    self.fill(x + dx, y + dy)
     
     def has_repetittion(self, list):
         seen=set()
@@ -142,11 +188,19 @@ class Hitori(BoardGame):
             if y - 1 >= 0 and "#" in str(self._bd[idx - self._w]):
                 return True
         return False
+    
+    """def cerchia_adiacenti(self, x, y):
+        if 0 <= x < self._w and 0 <= y < self._h:
+            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < self._w and 0 <= ny < self._h:
+                    self.circle(nx, ny)"""
+
 
     def status(self) -> str:
         if self.finished():
             return 'You win'
         else:
             return 'Playing...'
-    
+
 gui_play(Hitori("5-easy.csv"))
