@@ -32,11 +32,10 @@ class BoardGameGui:
             self.update_buttons((x, y))
         elif "RightButton" in released and y < game.rows():
             """if "#" in game.read(x, y):
-                game.play(x, y, "cerchia_adiacenti")
-            else:
-                game.play(x, y, "flag")
-            self.update_buttons((x, y))"""""
-
+                    game.play(x, y, "cerchia_adiacenti")
+                else:
+                    game.play(x, y, "flag")
+                self.update_buttons((x, y))"""""
             game.play(x, y, "flag")
             self.update_buttons((x, y))
 

@@ -2,8 +2,8 @@ from boardgame import BoardGame
 from boardgamegui import gui_play
 
 
-CLEAR=1
-BLACK=2
+CIRCLED=1
+BLACKED=2
 
 
 class Hitori(BoardGame):
@@ -37,32 +37,30 @@ class Hitori(BoardGame):
         """elif action == "cerchia_adiacenti" and "#" in self._bd[x + y * self._w]:
             self.cerchia_adiacenti(x, y)"""
 
+        
     def black(self, x: int, y: int):
         if 0 <= x < self._w and 0 <= y < self._h:
-            v = self._bd[x + y * self._w]
-            if "#" in str(v):
-                v = int(v.replace("#", ""))
-                self._bd[x + y * self._w] = str(v)
+            if self._annot[x + y * self._w] == 2:
                 self._annot[x + y * self._w] = 0
-            elif "!" not in str(v):
-                self._bd[x + y * self._w] = str(v)+"#"
+            else:
                 self._annot[x + y * self._w] = 2
+        print(self._annot)
     
     def circle(self, x: int, y: int):
         if 0 <= x < self._w and 0 <= y < self._h:
-            v = self._bd[x + y * self._w]
-            if "!" in str(v):
-                v = int(v.replace("!", ""))
-                self._bd[x + y * self._w] = str(v)
-            elif "#" not in str(v):
-                self._bd[x + y * self._w] = str(v)+"!"
-
+            if self._annot[x + y * self._w] ==1:
+                self._annot[x + y * self._w] = 0
+            else:
+                self._annot[x + y * self._w] = 1
+        print(self._annot)
 
     def read(self, x: int, y: int):
         if 0<=x<self._w and 0<=y<self._h:
             v=self._bd[x+y*self._w]
-            #if self.adiacenzaCella(x, y)==True:
-                #return str(v)+"!"
+            if self._annot[x+y*self._w]==CIRCLED:
+                return str(v) + "!"
+            elif self._annot[x+y*self._w]==BLACKED:
+                return str(v) + "#"
             return str(v)
         else:
             return ' '
@@ -72,52 +70,6 @@ class Hitori(BoardGame):
     
     def rows(self) -> int:
         return self._w
-
-    """def finished(self) -> bool:
-
-        if self.adiacenze()==True:
-            print("presenti adicenze")
-            return False
-        
-        self._annot = [0] * (self._h * self._w)
-        for y in range(self._h): 
-            for x in range(self._w): 
-                if self._annot[x + y * self._w] == 0 and "#" not in str(self._bd[x + y * self._w]): 
-                   self.fill(x, y) 
-                   break 
-            if 1 in self._annot: 
-                break
-
-        
-
-        for y in range(self._h): 
-            for x in range(self._w): 
-                if self._annot[x + y * self._w] == 0 and "#" not in str(self._bd[x + y * self._w]): 
-                    print("celle non collegate")
-                    return False        
-
-
-        for y in range(self._h):
-            row=[]
-            for x in range(self._w):
-                if not("#" in str(self._bd[x+y*self._w])):
-                    row.append(self._bd[x+y*self._w])
-            if self.has_repetittion(row):
-                print("ripetizioni su righe")
-                return False
-
-
-
-        for x in range(self._w):
-            cols=[]
-            for y in range(self._h):
-                if not("#" in str(self._bd[x+y*self._w])):
-                    cols.append(self._bd[x+y*self._w])
-            if self.has_repetittion(cols):
-                print("ripetizioni su colonne")
-                return False
-            
-        return True"""
     
     def finished(self) -> bool:
 
@@ -125,17 +77,38 @@ class Hitori(BoardGame):
             print("presenti adicenze")
             return False
         
-        self._annot = [0] * (self._h * self._w)
-        self.fill(0, 0) 
-        if all(self._annot)==False:
-            print("non tutte collegate")
+        visited = [0] * (self._h * self._w)
+
+        # Trova una cella iniziale non annerita
+        start_found = False
+        for y in range(self._h):
+            for x in range(self._w):
+                if self._annot[x + y * self._w] != BLACKED:  # Cella valida
+                    self.fill(x, y, visited)  # Riempie le celle collegate
+                    start_found = True
+                    break
+            if start_found:
+                break
+
+        # Se non c'è una cella iniziale valida, significa che tutte le celle sono annerite
+        if not start_found:
             return False
+
+        # Verifica che tutte le celle non annerite siano state visitate
+        for y in range(self._h):
+            for x in range(self._w):
+                idx = x + y * self._w
+                if self._annot[idx] != BLACKED and visited[idx] == 0:
+                    # Cella non annerita non visitata -> non tutte le celle sono collegate
+                    print("non tutte le celle sono collegate")
+                    return False
+
         else:
 
             for y in range(self._h):
                 row=[]
                 for x in range(self._w):
-                    if not("#" in str(self._bd[x+y*self._w])):
+                    if self._annot[x+y*self._w]!=BLACKED:
                         row.append(self._bd[x+y*self._w])
                 if self.has_repetittion(row):
                     print("ripetizioni su righe")
@@ -144,7 +117,7 @@ class Hitori(BoardGame):
             for x in range(self._w):
                 cols=[]
                 for y in range(self._h):
-                    if not("#" in str(self._bd[x+y*self._w])):
+                    if self._annot[x+y*self._w]!=BLACKED:
                         cols.append(self._bd[x+y*self._w])
                 if self.has_repetittion(cols):
                     print("ripetizioni su colonne")
@@ -153,13 +126,26 @@ class Hitori(BoardGame):
             return True
             
 
-    def fill(self, x, y):
-        bd, w, h = self._annot, self._w, self._h
-        if 0 <= x < w and 0 <= y < h and bd[x + y * w] == 0:
-            bd[x + y * w] = 1
-            for dx, dy in [(0, -1), (1, 0), (0, 1), (-1, 0)]:
-                if 0 <= x + dx < w and 0 <= y + dy < h and "#" not in str(self._bd[(x + dx) + (y + dy) * w]):
-                    self.fill(x + dx, y + dy)
+    def fill(self, x, y, visited):
+        """
+        Riempie le celle connesse a partire da (x, y),
+        evitando di attraversare celle nere.
+        """
+        w, h = self._w, self._h
+        idx = x + y * w
+
+        # Se siamo fuori dalla griglia o la cella è già visitata o è nera, interrompi
+        if not (0 <= x < w and 0 <= y < h):
+            return
+        if visited[idx] == 1 or self._annot[idx] == BLACKED:
+            return
+
+        # Marca la cella come visitata
+        visited[idx] = 1
+
+        # Propaga la visita nelle quattro direzioni cardinali
+        for dx, dy in [(0, -1), (1, 0), (0, 1), (-1, 0)]:
+            self.fill(x + dx, y + dy, visited)
     
     def has_repetittion(self, list):
         seen=set()
@@ -178,14 +164,14 @@ class Hitori(BoardGame):
 
     def adiacenzaCella(self, x, y):
         idx = x + y * self._w  
-        if "#" in str(self._bd[idx]):
-            if x + 1 < self._w and "#" in str(self._bd[idx + 1]):
+        if self._annot[idx] == 2:
+            if x + 1 < self._w and  self._annot[idx + 1] == 2:
                 return True
-            if x - 1 >= 0 and "#" in str(self._bd[idx - 1]):
+            if x - 1 >= 0 and self._annot[idx - 1] == 2:
                 return True
-            if y + 1 < self._h and "#" in str(self._bd[idx + self._w]):
+            if y + 1 < self._h and self._annot[idx + self._w] == 2:
                 return True
-            if y - 1 >= 0 and "#" in str(self._bd[idx - self._w]):
+            if y - 1 >= 0 and self._annot[idx - self._w] == 2:
                 return True
         return False
     
@@ -195,7 +181,6 @@ class Hitori(BoardGame):
                 nx, ny = x + dx, y + dy
                 if 0 <= nx < self._w and 0 <= ny < self._h:
                     self.circle(nx, ny)"""
-
 
     def status(self) -> str:
         if self.finished():
