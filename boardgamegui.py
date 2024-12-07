@@ -25,19 +25,23 @@ class BoardGameGui:
         if game.finished():
             g2d.alert(game.status())
             g2d.close_canvas()
+            
         elif "Escape" in released:  # "Escape" key released
             g2d.close_canvas()
         elif "LeftButton" in released and y < game.rows():
             game.play(x, y, "black")
             self.update_buttons((x, y))
         elif "RightButton" in released and y < game.rows():
-            """if "#" in game.read(x, y):
-                    game.play(x, y, "cerchia_adiacenti")
-                else:
-                    game.play(x, y, "flag")
-                self.update_buttons((x, y))"""""
-            game.play(x, y, "flag")
-            self.update_buttons((x, y))
+            if "#" in game.read(x, y):
+                game.play(x, y, "cerchia_adiacenti")
+                self.update_buttons((x, y))
+            elif "!" in game.read(x, y):
+                game.play(x, y, "annerisci_ripetizioni")
+                self.update_buttons((x, y))
+            else:
+                game.play(x, y, "flag")
+                self.update_buttons((x, y))
+            
 
     def update_buttons(self, last_move=None):
         cols, rows = self._game.cols(), self._game.rows()
@@ -84,12 +88,12 @@ def _write(text, pos, cols=1, bg=(255, 255, 255)):
         g2d.set_color((0, 0, 0))
         g2d.draw_text(text, circle_center, fsize)
 
-
     else:
         g2d.set_color((0, 0, 0))
         g2d.draw_text(text, center, fsize)
 
 def gui_play(game: BoardGame):
+
     g2d.init_canvas((game.cols() * W, game.rows() * H + H))
     ui = BoardGameGui(game)
     g2d.main_loop(ui.tick)
