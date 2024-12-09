@@ -11,6 +11,10 @@ except:
 from boardgame import BoardGame
 
 W, H = 40, 40
+l=["6-medium.csv", "7-hard.csv", "8-hard.csv", 
+    "9-veryhard.csv", "12-superhard.csv", "15-imppossible.csv",]
+
+counterLevel=0
 
 class BoardGameGui:
     def __init__(self, game: BoardGame):
@@ -18,15 +22,19 @@ class BoardGameGui:
         self.update_buttons()
 
     def tick(self):
+        global counterLevel
         game = self._game
         mouse_x, mouse_y = g2d.mouse_pos()
         x, y = mouse_x // W, mouse_y // H
         released = set(g2d.previous_keys()) - set(g2d.current_keys())
         if game.finished():
             g2d.alert(game.status())
-            g2d.close_canvas()
+            g2d.alert("Next level")
+            print(counterLevel)
+            game.level(counterLevel)
+            counterLevel +=1
             
-        elif "Escape" in released:  # "Escape" key released
+        elif "Escape" in released: 
             g2d.close_canvas()
         elif "LeftButton" in released and y < game.rows():
             game.play(x, y, "black")
@@ -41,6 +49,9 @@ class BoardGameGui:
             else:
                 game.play(x, y, "flag")
                 self.update_buttons((x, y))
+        elif "h" in released:
+            game.h()
+            self.update_buttons()
             
 
     def update_buttons(self, last_move=None):
@@ -61,7 +72,7 @@ def _write(text, pos, cols=1, bg=(255, 255, 255)):
     g2d.draw_rect((x * W + 1, y * H + 1), (cols * W - 2, H - 2))
     
     chars = max(1, len(text))
-    fsize = min(0.75 * H, 1.5 * cols * W / chars)
+    fsize = min(0.75 * H, 1.5 * cols * W // (chars*0.5))
     center = (x * W + cols * W/2, y * H + H/2)
 
     if "#" in text:
@@ -97,4 +108,3 @@ def gui_play(game: BoardGame):
     g2d.init_canvas((game.cols() * W, game.rows() * H + H))
     ui = BoardGameGui(game)
     g2d.main_loop(ui.tick)
-

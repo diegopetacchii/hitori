@@ -1,5 +1,6 @@
 from boardgame import BoardGame
 from boardgamegui import gui_play
+import g2d
 
 CLAER=0
 CIRCLED=1
@@ -28,6 +29,14 @@ class Hitori(BoardGame):
 
         self._annot=[0]*(self._h*self._w)
         #print(self._annot)
+
+    def level(self, level):
+        l=["6-medium.csv", "7-hard.csv", "8-hard.csv", 
+        "9-veryhard.csv", "12-superhard.csv", "15-imppossible.csv",]
+
+        gui_play(Hitori(l[level]))
+
+        g2d.close_canvas()
 
     def play(self, x: int, y: int, action: str):
         if action == "black":
@@ -198,18 +207,71 @@ class Hitori(BoardGame):
             self._annot[x + y * self._w] = 2
         #print(self._annot)
 
+    def h(self):
+        initial_temp = list(self._annot)  # Usa una copia per preservare lo stato iniziale
+        temp = self._annot
+        
+        for y in range(self._h):
+            for x in range(self._w):
+                if initial_temp[x + y * self._w] in {BLACKED, CIRCLED}:
+                    if temp[x + y * self._w] == BLACKED:
+                        self.cerchia_adiacenti(x, y)
+                    elif temp[x + y * self._w] == CIRCLED:
+                        self.annerisci_ripetizioni(x, y)
+
     def status(self) -> str:
         if self.finished():
             return 'You win'
         else:
-            return 'Playing...'
+            return self.wrong()
+        
+    def wrong(self):
+
+        if self.adiacenze()==True:
+            return "Sono presenti adicenze"
+            
+        
+        visited = [0] * (self._h * self._w)
+
+        # Trova una cella iniziale non annerita
+        for y in range(self._h):
+            for x in range(self._w):
+                if self._annot[x + y * self._w] != BLACKED: 
+                    self.fill(x, y, visited)
+                    break
+
+        # Verifica che tutte le celle non annerite siano state visitate
+        for y in range(self._h):
+            for x in range(self._w):
+                idx = x + y * self._w
+                if self._annot[idx] != BLACKED and visited[idx] == 0:
+                    # Cella non annerita non visitata -> non tutte le celle sono collegate
+                    return ("non tutte le celle sono collegate")
+
+        
+        for y in range(self._h):
+            row=[]
+            for x in range(self._w):
+                if self._annot[x+y*self._w]!=BLACKED:
+                    row.append(self._bd[x+y*self._w])
+            if self.has_repetittion(row):
+                return ("Sono presenti ripetizioni sulle righe")
+
+        for x in range(self._w):
+            cols=[]
+            for y in range(self._h):
+                if self._annot[x+y*self._w]!=BLACKED:
+                   cols.append(self._bd[x+y*self._w])
+            if self.has_repetittion(cols):
+                return("Sono presenti ripetizioni sulle colonne")
+                                
+        return ""
+
 
 def main():
-    l=["5-easy.csv", "6-medium.csv", "7-hard.csv", "8-hard.csv", 
-       "9-veryhard.csv", "12-superhard.csv", "15-imppossible.csv",]
+    l="5-easy.csv"
 
-    for x in l:
-        gui_play(Hitori(x))
+    gui_play(Hitori(l))
 
 
 if __name__ == '__main__':
