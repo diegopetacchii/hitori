@@ -11,10 +11,9 @@ except:
 from boardgame import BoardGame
 
 W, H = 40, 40
-l=["6-medium.csv", "7-hard.csv", "8-hard.csv", 
-    "9-veryhard.csv", "12-superhard.csv", "15-imppossible.csv",]
-
-counterLevel=0
+counterLevel=-1
+l=["6-medium.csv", "8-hard.csv", 
+    "9-veryhard.csv", "12-superhard.csv", "15-imppossible.csv"]
 
 class BoardGameGui:
     def __init__(self, game: BoardGame):
@@ -29,10 +28,15 @@ class BoardGameGui:
         released = set(g2d.previous_keys()) - set(g2d.current_keys())
         if game.finished():
             g2d.alert(game.status())
-            g2d.alert("Next level")
-            print(counterLevel)
+
+            counterLevel+=1
+            
+            if(counterLevel==6):
+                g2d.close_canvas()
+
+            g2d.alert("Next level: "+str(l[counterLevel]))           
             game.level(counterLevel)
-            counterLevel +=1
+
             
         elif "Escape" in released: 
             g2d.close_canvas()
@@ -72,7 +76,7 @@ def _write(text, pos, cols=1, bg=(255, 255, 255)):
     g2d.draw_rect((x * W + 1, y * H + 1), (cols * W - 2, H - 2))
     
     chars = max(1, len(text))
-    fsize = min(0.75 * H, 1.5 * cols * W // (chars*0.5))
+    fsize = min(0.75 * H, 1.5 * cols * W // (chars))
     center = (x * W + cols * W/2, y * H + H/2)
 
     if "#" in text:
@@ -102,6 +106,7 @@ def _write(text, pos, cols=1, bg=(255, 255, 255)):
     else:
         g2d.set_color((0, 0, 0))
         g2d.draw_text(text, center, fsize)
+        
 
 def gui_play(game: BoardGame):
 

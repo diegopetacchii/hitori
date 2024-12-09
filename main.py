@@ -8,6 +8,8 @@ BLACKED=2
 
 
 class Hitori(BoardGame):
+
+    #costruttore del gioco, valorizza varibili fondamentali dell oggetto
     def __init__(self, filename):
         
         self._bd = []
@@ -28,16 +30,17 @@ class Hitori(BoardGame):
                     self._w = len(int_values)
 
         self._annot=[0]*(self._h*self._w)
-        #print(self._annot)
 
+    #funzione per scorrere i livelli di gioco
     def level(self, level):
-        l=["6-medium.csv", "7-hard.csv", "8-hard.csv", 
-        "9-veryhard.csv", "12-superhard.csv", "15-imppossible.csv",]
-
+        l=["6-medium.csv", "8-hard.csv", 
+        "9-veryhard.csv", "12-superhard.csv", "15-imppossible.csv"]
+        
         gui_play(Hitori(l[level]))
 
         g2d.close_canvas()
 
+    #funzione per gestire funzioni in base all'iput ricevuto
     def play(self, x: int, y: int, action: str):
         if action == "black":
             self.black(x, y)
@@ -48,23 +51,23 @@ class Hitori(BoardGame):
         elif action == "annerisci_ripetizioni":
             self.annerisci_ripetizioni(x, y)
 
-        
+    #funzione per annerire i valori della lista
     def black(self, x: int, y: int):
         if 0 <= x < self._w and 0 <= y < self._h:
             if self._annot[x + y * self._w] == 2:
                 self._annot[x + y * self._w] = 0
             else:
                 self._annot[x + y * self._w] = 2
-        #print(self._annot)
     
+    #funzione per cerhiare i valori della lista
     def circle(self, x: int, y: int):
         if 0 <= x < self._w and 0 <= y < self._h:
             if self._annot[x + y * self._w] ==1:
                 self._annot[x + y * self._w] = 0
             else:
                 self._annot[x + y * self._w] = 1
-        #print(self._annot)
 
+    #legge i valori della lista e li passa a una funzione per la loro scrittura a schermo
     def read(self, x: int, y: int):
         if 0<=x<self._w and 0<=y<self._h:
             v=self._bd[x+y*self._w]
@@ -75,17 +78,19 @@ class Hitori(BoardGame):
             return str(v)
         else:
             return ' '
-        
+    
+    #ritorna il numero di righe della matrice
     def cols(self) -> int:
         return self._h
     
+    #ritorna il numero di righe della tabella
     def rows(self) -> int:
         return self._w
     
+    #controllo perhe tutte le regole siano rispettate per la vittoria 
     def finished(self) -> bool:
 
         if self.adiacenze()==True:
-            #print("presenti adicenze")
             return False
         
         visited = [0] * (self._h * self._w)
@@ -103,7 +108,6 @@ class Hitori(BoardGame):
                 idx = x + y * self._w
                 if self._annot[idx] != BLACKED and visited[idx] == 0:
                     # Cella non annerita non visitata -> non tutte le celle sono collegate
-                    #print("non tutte le celle sono collegate")
                     return False
 
         
@@ -112,8 +116,7 @@ class Hitori(BoardGame):
             for x in range(self._w):
                 if self._annot[x+y*self._w]!=BLACKED:
                     row.append(self._bd[x+y*self._w])
-            if self.has_repetittion(row):
-                #print("ripetizioni su righe")
+            if self.has_repetition(row):
                 return False
 
         for x in range(self._w):
@@ -121,13 +124,13 @@ class Hitori(BoardGame):
             for y in range(self._h):
                 if self._annot[x+y*self._w]!=BLACKED:
                    cols.append(self._bd[x+y*self._w])
-            if self.has_repetittion(cols):
-                #print("ripetizioni su colonne")
+            if self.has_repetition(cols):
                 return False
-                                
+
+        #tutte le regole sono rispettate               
         return True
             
-
+    #funzione per controllare se tutte le celle sono sollegate tra loro
     def fill(self, x, y, visited):
         w, h = self._w, self._h
         idx = x + y * w
@@ -141,7 +144,8 @@ class Hitori(BoardGame):
         for dx, dy in [(0, -1), (1, 0), (0, 1), (-1, 0)]:
             self.fill(x + dx, y + dy, visited)
     
-    def has_repetittion(self, list):
+    #controllo per le ripetizioni sia su riga che per colonna
+    def has_repetition(self, list):
         seen=set()
         for v in list:
             if v in seen:
@@ -149,6 +153,7 @@ class Hitori(BoardGame):
             seen.add(v)
         return False
 
+    #scorre tutte le celle della lista per verificare adiacenze tra celle nere
     def adiacenze(self):
         for y in range(self._h):
             for x in range(self._w):
@@ -156,6 +161,7 @@ class Hitori(BoardGame):
                     return True
         return False
 
+    #controlla se una cella e adiacente ad un altra cella nera in una delle 4 direzioni 
     def adiacenzaCella(self, x, y):
         idx = x + y * self._w  
         if self._annot[idx] == 2:
@@ -169,6 +175,7 @@ class Hitori(BoardGame):
                 return True
         return False
     
+    #funzione per gestire automatismo cerchia celle adiacenti a una cella nera
     def cerchia_adiacenti(self, x, y):
         if 0 <= x < self._w and 0 <= y < self._h:
             for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
@@ -176,10 +183,12 @@ class Hitori(BoardGame):
                 if 0 <= nx < self._w and 0 <= ny < self._h:
                     self.auto_circle(nx, ny)
 
+    #cerchia una cella
     def auto_circle(self, x: int, y: int):
         if 0 <= x < self._w and 0 <= y < self._h:
             self._annot[x + y * self._w] = 1       
     
+    #controlla se in una riga o colonna ci sono ripetizioni e in caso le annerisce
     def annerisci_ripetizioni(self, x, y):
         seen = set()
         y_index = y * self._w
@@ -202,13 +211,14 @@ class Hitori(BoardGame):
                 else:
                     seen.add(val)
 
+    #annerisce una singla cella 
     def auto_black(self, x: int, y: int):
         if 0 <= x < self._w and 0 <= y < self._h:
             self._annot[x + y * self._w] = 2
-        #print(self._annot)
 
+    #funzione per gestire tutti gli automatismi insieme su tutta la lista
     def h(self):
-        initial_temp = list(self._annot)  # Usa una copia per preservare lo stato iniziale
+        initial_temp = list(self._annot)
         temp = self._annot
         
         for y in range(self._h):
@@ -219,12 +229,14 @@ class Hitori(BoardGame):
                     elif temp[x + y * self._w] == CIRCLED:
                         self.annerisci_ripetizioni(x, y)
 
+    #ritorna lo stato del gioco
     def status(self) -> str:
         if self.finished():
             return 'You win'
         else:
             return self.wrong()
-        
+    
+    #funzione per controllare che errori impediscono la vittoria
     def wrong(self):
 
         if self.adiacenze()==True:
@@ -233,19 +245,16 @@ class Hitori(BoardGame):
         
         visited = [0] * (self._h * self._w)
 
-        # Trova una cella iniziale non annerita
         for y in range(self._h):
             for x in range(self._w):
                 if self._annot[x + y * self._w] != BLACKED: 
                     self.fill(x, y, visited)
                     break
 
-        # Verifica che tutte le celle non annerite siano state visitate
         for y in range(self._h):
             for x in range(self._w):
                 idx = x + y * self._w
                 if self._annot[idx] != BLACKED and visited[idx] == 0:
-                    # Cella non annerita non visitata -> non tutte le celle sono collegate
                     return ("non tutte le celle sono collegate")
 
         
@@ -254,7 +263,7 @@ class Hitori(BoardGame):
             for x in range(self._w):
                 if self._annot[x+y*self._w]!=BLACKED:
                     row.append(self._bd[x+y*self._w])
-            if self.has_repetittion(row):
+            if self.has_repetition(row):
                 return ("Sono presenti ripetizioni sulle righe")
 
         for x in range(self._w):
@@ -262,16 +271,18 @@ class Hitori(BoardGame):
             for y in range(self._h):
                 if self._annot[x+y*self._w]!=BLACKED:
                    cols.append(self._bd[x+y*self._w])
-            if self.has_repetittion(cols):
+            if self.has_repetition(cols):
                 return("Sono presenti ripetizioni sulle colonne")
                                 
         return ""
 
-
+#funzione principale per avviare il gioco
 def main():
     l="5-easy.csv"
 
     gui_play(Hitori(l))
+
+    n=input()
 
 
 if __name__ == '__main__':
